@@ -1,5 +1,4 @@
 const express = require('express');
-const { requireAdmin } = require('./api/_lib/auth');
 const cors = require('cors');
 const path = require('path');
 const dotenv = require('dotenv');
@@ -29,6 +28,10 @@ const { createClient } = require('@supabase/supabase-js');
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY;
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { realtime: { enabled: false } });
+
+// Stripe setup
+const Stripe = require('stripe');
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_REPLACE_ME');
 
 const getJiraConfig = () => ({
   domain: process.env.JIRA_DOMAIN || 'https://divinginasia.atlassian.net',
@@ -295,6 +298,40 @@ app.post('/api/bookings', async (req, res) => {
     return res.status(201).json(data[0]);
   } catch (err) {
     return res.status(500).json({ error: err.message });
+  }
+});
+
+// Stripe Checkout session endpoint
+app.post('/api/create-stripe-session', async (req, res) => {
+  const { name, email, course_title, preferred_date, experience_level } = req.body;
+  if (!name || !email || !course_title) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+  try {
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: course_title,
+              description: `Preferred date: ${preferred_date || '-'} | Experience: ${experience_level || '-'}`,
+            },
+            unit_amount: 5000, // $50.00, change as needed
+          },
+          quantity: 1,
+        },
+      ],
+      mode: 'payment',
+      customer_email: email,
+      success_url: 'https://www.divinginasia.com/thank-you.html',
+      cancel_url: 'https://www.divinginasia.com/booking-form.html',
+      metadata: { name, email, course_title, preferred_date, experience_level },
+    });
+    res.json({ url: session.url });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
