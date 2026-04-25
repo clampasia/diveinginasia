@@ -187,19 +187,20 @@ const       BookingPage: React.FC = () => {
             amount: addon.amount,
           }))
         : [];
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select your experience level" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="none">No diving experience</SelectItem>
-                    <SelectItem value="beginner">Beginner (1-10 dives)</SelectItem>
-                    <SelectItem value="intermediate">Intermediate (10-50 dives)</SelectItem>
-                    <SelectItem value="advanced">Advanced (50+ dives)</SelectItem>
-                    <SelectItem value="professional">Professional diver</SelectItem>
-                  </SelectContent>
-                </Select>
+                  <Select>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select your experience level" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="none">No diving experience</SelectItem>
+                      <SelectItem value="beginner">Beginner (1-10 dives)</SelectItem>
+                      <SelectItem value="intermediate">Intermediate (10-50 dives)</SelectItem>
+                      <SelectItem value="advanced">Advanced (50+ dives)</SelectItem>
+                      <SelectItem value="professional">Professional diver</SelectItem>
+                    </SelectContent>
+                  </Select>
                 <FormMessage />
               </FormItem>
             )} />
